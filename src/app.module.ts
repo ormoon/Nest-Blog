@@ -8,7 +8,8 @@ import { validationSchema } from './config/config.validation';
 import { DBConfig } from './common/types/db-config.types';
 import configList from './config';
 import { ResponseInterceptor } from './common/interceptors/response.interceptors';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { CatchExceptionFilter } from './common/filters/exception.filter';
 
 @Module({
   imports: [
@@ -35,6 +36,10 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: CatchExceptionFilter,
     },
   ],
 })
