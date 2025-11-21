@@ -34,6 +34,7 @@ export class ResponseInterceptor implements NestInterceptor {
         const { message, meta } = controllerRes;
         let data = controllerRes.data;
 
+        // We need to exclude the password field defined in the User entity when returning data, so we convert the entity to a plain object.
         if (data && typeof data === 'object') {
           data = instanceToPlain(data);
         }

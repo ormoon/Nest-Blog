@@ -45,7 +45,7 @@ export class UserService {
     if (!user)
       throw new HttpException(
         `User with provided ${isId ? 'id' : 'email'} doesn't exist in the system.`,
-        HttpStatus.NOT_FOUND,
+        HttpStatus.NO_CONTENT,
       );
     return user;
   }

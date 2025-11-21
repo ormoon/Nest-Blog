@@ -3,6 +3,7 @@ import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsEmail,
+  IsEnum,
   IsLowercase,
   IsNotEmpty,
   IsOptional,
@@ -11,6 +12,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { trimString } from '../../common/utils/format.util';
+import { UserRole } from '../user.entity';
 
 export class UserDto {
   @IsNotEmpty()
@@ -37,6 +39,10 @@ export class UserDto {
   @Length(5, 8)
   @Transform(({ value }) => trimString(value))
   password: string;
+
+  @IsOptional()
+  @IsEnum(UserRole)
+  role: UserRole;
 
   @IsOptional()
   @IsBoolean()

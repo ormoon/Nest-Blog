@@ -8,6 +8,11 @@ import {
   DeleteDateColumn,
 } from 'typeorm';
 
+export enum UserRole {
+  USER = 'user',
+  ADMIN = 'admin',
+}
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -25,6 +30,13 @@ export class User {
   @Column()
   @Exclude({ toPlainOnly: true })
   password: string;
+
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.USER,
+  })
+  role: UserRole;
 
   @Column({ default: false })
   isActive: boolean;

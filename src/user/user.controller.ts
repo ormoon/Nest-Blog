@@ -12,6 +12,7 @@ import { UserService } from './user.service';
 import { UserDto } from './dtos/user.dto';
 import { QueryDto } from '../common/dtos/query.dto';
 import { LIMIT, PAGE } from '../config/default-value.config';
+import { hashPassword } from '../common/utils/bcrypt.util';
 
 @Controller('users')
 export class UserController {
@@ -19,7 +20,10 @@ export class UserController {
 
   @Post()
   async create(@Body() createUserDto: UserDto) {
-    const user = await this.userService.create(createUserDto);
+    const { password, ...rest } = createUserDto;
+    const hashPass = await hashPassword(password);
+    const userPayload = { ...rest, password: hashPass };
+    const user = await this.userService.create(userPayload);
     return {
       message: 'User created successfully',
       data: user,
