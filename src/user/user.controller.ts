@@ -9,7 +9,7 @@ import {
   Delete,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UserDto } from './dto/user.dto';
+import { UserDto } from './dtos/user.dto';
 import { QueryDto } from '../common/dtos/query.dto';
 import { LIMIT, PAGE } from '../config/default-value.config';
 
@@ -44,9 +44,10 @@ export class UserController {
     };
   }
 
-  @Get(':id')
-  async findOneById(@Param('id') id: string) {
-    const user = await this.userService.findOneById(+id);
+  @Get(':value')
+  async findOne(@Param('value') value: string) {
+    const user = await this.userService.findByIdOrEmail(value);
+
     return {
       message: 'User retrieved successfully',
       data: user,
@@ -58,7 +59,7 @@ export class UserController {
     @Param('id') id: string,
     @Body() updateUserDto: Partial<UserDto>,
   ) {
-    const updatedUser = await this.userService.updateById(+id, updateUserDto);
+    const updatedUser = await this.userService.updateById(id, updateUserDto);
     return {
       message: 'User has been updated successfully',
       data: updatedUser,
@@ -67,7 +68,7 @@ export class UserController {
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    await this.userService.removeUser(+id);
+    await this.userService.removeUser(id);
     return {
       message: `User with id ${id} has been removed successfully`,
       data: null,

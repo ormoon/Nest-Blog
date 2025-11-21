@@ -10,6 +10,7 @@ import configList from './config';
 import { ResponseInterceptor } from './common/interceptors/response.interceptors';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { CatchExceptionFilter } from './common/filters/exception.filter';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { CatchExceptionFilter } from './common/filters/exception.filter';
         return dbConfig;
       },
     }),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
