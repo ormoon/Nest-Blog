@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 import { UserDto } from './dtos/user.dto';
 import { QueryDto } from '../common/dtos/query.dto';
 import { buildQueryOptions } from '../common/utils/query.util';
-import { isNumberString } from '../common/utils/validation.util';
 
 @Injectable()
 export class UserService {
@@ -36,28 +35,30 @@ export class UserService {
       .getManyAndCount();
   }
 
-  async findByIdOrEmail(value: string): Promise<User | null> {
-    const isId: boolean = isNumberString(value);
-    const query = isId ? { id: Number(value) } : { email: value };
-
-    const user = await this.usersRepository.findOneBy(query);
+  async findOneById(id: number): Promise<User | null> {
+    const user = await this.usersRepository.findOneBy({ id });
 
     if (!user)
       throw new HttpException(
-        `User with provided ${isId ? 'id' : 'email'} doesn't exist in the system.`,
-        HttpStatus.NO_CONTENT,
+        `User with provided id doesn't exist in the system.`,
+        HttpStatus.NOT_FOUND,
       );
+
     return user;
   }
 
-  async updateById(id: string, userData: Partial<User>): Promise<User> {
-    const user = await this.findByIdOrEmail(id);
+  async updateById(id: number, userData: Partial<User>): Promise<User> {
+    const user = await this.findOneById(id);
     const updated = await this.usersRepository.save({ ...user, ...userData });
     return updated;
   }
 
-  async removeUser(id: string): Promise<void> {
-    await this.findByIdOrEmail(id);
+  async removeUser(id: number): Promise<void> {
+    await this.findOneById(id);
     await this.usersRepository.softDelete(id);
+  }
+
+  async findOneByEmail(email: string): Promise<User | null> {
+    return await this.usersRepository.findOneBy({ email });
   }
 }

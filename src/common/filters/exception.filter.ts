@@ -28,9 +28,13 @@ export class CatchExceptionFilter implements ExceptionFilter {
     const responseBody = {
       statusCode: httpStatus,
       timestamp: new Date().toISOString(),
+      method: request.method,
       path: httpAdapter.getRequestUrl(request) as string,
       error: isHttpException ? exception.getResponse() : String(exception),
     };
+
+    // TODO: add a logger
+    console.log('exception >> ', exception);
 
     httpAdapter.reply(response, responseBody, httpStatus);
   }

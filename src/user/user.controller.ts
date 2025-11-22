@@ -7,12 +7,15 @@ import {
   Put,
   Param,
   Delete,
+  ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDto } from './dtos/user.dto';
 import { QueryDto } from '../common/dtos/query.dto';
 import { LIMIT, PAGE } from '../config/default-value.config';
 import { hashPassword } from '../common/utils/bcrypt.util';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('users')
 export class UserController {
@@ -48,10 +51,10 @@ export class UserController {
     };
   }
 
-  @Get(':value')
-  async findOne(@Param('value') value: string) {
-    const user = await this.userService.findByIdOrEmail(value);
-
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const user = await this.userService.findOneById(id);
     return {
       message: 'User retrieved successfully',
       data: user,
@@ -60,7 +63,7 @@ export class UserController {
 
   @Put(':id')
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: Partial<UserDto>,
   ) {
     const updatedUser = await this.userService.updateById(id, updateUserDto);
@@ -71,7 +74,7 @@ export class UserController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id', ParseIntPipe) id: number) {
     await this.userService.removeUser(id);
     return {
       message: `User with id ${id} has been removed successfully`,
