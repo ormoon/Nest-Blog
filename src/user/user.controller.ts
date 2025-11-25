@@ -16,6 +16,9 @@ import { QueryDto } from '../common/dtos/query.dto';
 import { LIMIT, PAGE } from '../config/default-value.config';
 import { hashPassword } from '../common/utils/bcrypt.util';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from './user.entity';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('users')
 export class UserController {
@@ -51,8 +54,9 @@ export class UserController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER)
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const user = await this.userService.findOneById(id);
     return {
