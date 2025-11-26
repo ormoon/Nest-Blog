@@ -9,6 +9,8 @@ import {
   Delete,
   ParseIntPipe,
   UseGuards,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDto } from './dtos/user.dto';
@@ -17,8 +19,9 @@ import { LIMIT, PAGE } from '../config/default-value.config';
 import { hashPassword } from '../common/utils/bcrypt.util';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from './user.entity';
+import { User, UserRole } from './user.entity';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @Controller('users')
 export class UserController {
@@ -66,10 +69,25 @@ export class UserController {
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: Partial<UserDto>,
+    @CurrentUser() currentUser: User,
   ) {
+    console.log(
+      'currentUser.id,id,currentUser.id !== id',
+      currentUser.id,
+      id,
+      currentUser.id === id,
+    );
+    if (currentUser.id !== id || currentUser.role !== UserRole.ADMIN) {
+      throw new HttpException(
+        'You are not authorized to update this user',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
     const updatedUser = await this.userService.updateById(id, updateUserDto);
     return {
       message: 'User has been updated successfully',
