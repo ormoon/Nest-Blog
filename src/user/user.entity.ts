@@ -6,7 +6,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { Post } from '../post/post.entity';
 
 export enum UserRole {
   USER = 'user',
@@ -40,6 +42,11 @@ export class User {
 
   @Column({ default: false })
   isActive: boolean;
+
+  @OneToMany(() => Post, (post) => post.author, {
+    cascade: true,
+  })
+  posts: Post[];
 
   @CreateDateColumn()
   createdAt: Date;

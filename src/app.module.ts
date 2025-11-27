@@ -11,6 +11,9 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptors
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { CatchExceptionFilter } from './common/filters/exception.filter';
 import { AuthModule } from './auth/auth.module';
+import { PostController } from './post/post.controller';
+import { PostService } from './post/post.service';
+import { PostModule } from './post/post.module';
 
 @Module({
   imports: [
@@ -31,8 +34,9 @@ import { AuthModule } from './auth/auth.module';
       },
     }),
     AuthModule,
+    PostModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, PostController],
   providers: [
     AppService,
     {
@@ -43,6 +47,7 @@ import { AuthModule } from './auth/auth.module';
       provide: APP_FILTER,
       useClass: CatchExceptionFilter,
     },
+    PostService,
   ],
 })
 export class AppModule {}
