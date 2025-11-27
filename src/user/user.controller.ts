@@ -28,6 +28,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
+  @Roles(UserRole.ADMIN)
   async create(@Body() createUserDto: UserDto) {
     const { password, ...rest } = createUserDto;
     const hashPass = await hashPassword(password);
@@ -40,6 +41,7 @@ export class UserController {
   }
 
   @Get()
+  @Roles(UserRole.ADMIN)
   async findAll(@Query() query: QueryDto) {
     const [users, totalData] = await this.userService.findAll(query);
     const { limit = LIMIT, page = PAGE } = query;
@@ -59,7 +61,6 @@ export class UserController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER)
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const user = await this.userService.findOneById(id);
     return {
@@ -75,13 +76,7 @@ export class UserController {
     @Body() updateUserDto: Partial<UserDto>,
     @CurrentUser() currentUser: User,
   ) {
-    console.log(
-      'currentUser.id,id,currentUser.id !== id',
-      currentUser.id,
-      id,
-      currentUser.id === id,
-    );
-    if (currentUser.id !== id || currentUser.role !== UserRole.ADMIN) {
+    if (currentUser.id !== id && currentUser.role !== UserRole.ADMIN) {
       throw new HttpException(
         'You are not authorized to update this user',
         HttpStatus.FORBIDDEN,
@@ -96,6 +91,8 @@ export class UserController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.userService.removeUser(id);
     return {
