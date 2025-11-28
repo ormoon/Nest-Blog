@@ -14,8 +14,8 @@ export class UserService {
   ) {}
 
   create(user: UserDto): Promise<User> {
-    const useData = this.usersRepository.create(user);
-    return this.usersRepository.save(useData);
+    const userData = this.usersRepository.create(user);
+    return this.usersRepository.save(userData);
   }
 
   findAll(query: QueryDto): Promise<[User[], number]> {
