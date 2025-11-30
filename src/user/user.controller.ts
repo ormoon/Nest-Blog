@@ -28,6 +28,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   async create(@Body() createUserDto: UserDto) {
     const { password, ...rest } = createUserDto;
@@ -41,6 +42,7 @@ export class UserController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   async findAll(@Query() query: QueryDto) {
     const [users, totalData] = await this.userService.findAll(query);
@@ -61,6 +63,7 @@ export class UserController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const user = await this.userService.findOneById(id);
     return {

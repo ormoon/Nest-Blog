@@ -50,4 +50,7 @@ export class Post {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  @ManyToOne(() => User, (user) => user.posts, { nullable: true })
+  deletedBy: User;
 }
