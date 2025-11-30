@@ -54,8 +54,8 @@ export class UserService {
   }
 
   async removeUser(id: number): Promise<void> {
-    await this.findOneById(id);
-    await this.usersRepository.softDelete(id);
+    const user = await this.findOneById(id);
+    if (user) await this.usersRepository.softRemove(user);
   }
 
   async findOneByEmail(email: string): Promise<User | null> {

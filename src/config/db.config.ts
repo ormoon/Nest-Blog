@@ -1,4 +1,5 @@
 import { DBConfig } from '../common/types/db-config.types';
+import { UserSubscriber } from '../user/UserSubscriber';
 
 export default (): { database: DBConfig } => ({
   database: {
@@ -9,6 +10,7 @@ export default (): { database: DBConfig } => ({
     password: process.env.DB_PASSWORD!,
     database: process.env.DB_NAME!,
     autoLoadEntities: true,
+    subscribers: [UserSubscriber],
     synchronize: process.env.NODE_ENV !== 'production',
   },
 });
