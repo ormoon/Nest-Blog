@@ -12,7 +12,6 @@ export class UserSubscriber implements EntitySubscriberInterface<User> {
     return User;
   }
 
-  //   TODO: add transaction, i.e. if issue arries on deleting post then user should restore...
   async afterSoftRemove(event: SoftRemoveEvent<User>) {
     if (!event.entity) {
       return;

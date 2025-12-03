@@ -20,7 +20,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { QueryDto } from '../common/dtos/query.dto';
 import { LIMIT, PAGE } from '../config/default-value.config';
 
-@Controller('post')
+@Controller('posts')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
