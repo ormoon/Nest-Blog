@@ -36,7 +36,11 @@ export class UserService {
   }
 
   async findOneById(id: number): Promise<User | null> {
-    const user = await this.usersRepository.findOneBy({ id });
+    // const user = await this.usersRepository.findOneBy({ id });
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['posts'],
+    });
 
     if (!user)
       throw new HttpException(

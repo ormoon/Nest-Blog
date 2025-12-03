@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -37,6 +38,7 @@ export class Post {
   summary: string;
 
   @ManyToOne(() => User, (user) => user.posts)
+  @JoinColumn({ name: 'author_id' })
   author: User;
 
   @Column({ type: 'enum', enum: PostStatus, default: PostStatus.DRAFT })
@@ -52,5 +54,6 @@ export class Post {
   deletedAt: Date;
 
   @ManyToOne(() => User, (user) => user.posts, { nullable: true })
+  @JoinColumn({ name: 'deleted_by' })
   deletedBy: User;
 }
