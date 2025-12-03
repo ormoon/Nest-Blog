@@ -27,8 +27,14 @@ export class PostController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.USER)
-  async create(@Body() createPostDto: PostDto) {
-    const post = await this.postService.createPost(createPostDto);
+  async create(
+    @Body() createPostDto: Omit<PostDto, 'author'>,
+    @CurrentUser() currentUser: User,
+  ) {
+    const post = await this.postService.createPost({
+      ...createPostDto,
+      author: currentUser.id,
+    });
     return {
       message: 'Post has been created successfully',
       data: post,
