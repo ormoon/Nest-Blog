@@ -22,6 +22,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { User, UserRole } from './user.entity';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { UserReportFilterDto } from './dtos/userReportFilter.dto';
 
 @Controller('users')
 export class UserController {
@@ -110,6 +111,17 @@ export class UserController {
     await this.userService.removeUser(id);
     return {
       message: `User with id ${id} has been removed successfully`,
+      data: null,
+    };
+  }
+
+  @Post('/export')
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(UserRole.ADMIN)
+  async exportUsers(@Body() reportFilter: UserReportFilterDto) {
+    await this.userService.exportUsers(reportFilter);
+    return {
+      message: `Users report has been exported successfully`,
       data: null,
     };
   }

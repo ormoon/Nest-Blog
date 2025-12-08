@@ -5,6 +5,11 @@ import { Repository } from 'typeorm';
 import { UserDto } from './dtos/user.dto';
 import { QueryDto } from '../common/dtos/query.dto';
 import { buildQueryOptions } from '../common/utils/query.util';
+import * as csv from 'fast-csv';
+import { PassThrough } from 'stream';
+import { Post, PostStatus } from '../post/post.entity';
+import { UserReportFilterDto } from './dtos/userReportFilter.dto';
+import { distinct, groupBy } from 'rxjs';
 
 @Injectable()
 export class UserService {
@@ -75,5 +80,59 @@ export class UserService {
 
   async findOneByEmail(email: string): Promise<User | null> {
     return await this.usersRepository.findOneBy({ email });
+  }
+
+  // export users, also export based on filter
+  async exportUsers(filter: UserReportFilterDto) {
+    const csvStream = csv.format({ headers: true });
+    const outputStream = new PassThrough();
+    csvStream.pipe(outputStream);
+
+    const queryBuilder = this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoin('user.posts', 'post')
+      .select('user', 'user')
+      .addSelect('COUNT(post.author_id)', 'user_totalPosts')
+      .where('user.role != :role', { role: 'admin' })
+      .groupBy('user.id');
+
+    if (filter?.search) {
+      queryBuilder.andWhere(
+        'user.firstName ILIKE :search OR user.lastName ILIKE :search',
+        { search: `%${filter.search}%` },
+      );
+    }
+
+    const queryStream = await queryBuilder.stream();
+
+    const headers = [
+      'firstName',
+      'lastName',
+      'email',
+      'role',
+      'isActive',
+      'createdAt',
+      'totalPosts',
+    ];
+
+    queryStream.on('data', (row) => {
+      const data: Record<string, unknown> = {};
+      headers.forEach((header) => {
+        const value: string = String(row?.[`user_${header}`] ?? '');
+        data[header] = value;
+      });
+      console.log(data);
+      csvStream.write(data);
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      queryStream.on('end', () => {
+        csvStream.end();
+        resolve();
+      });
+      queryStream.on('error', (err) => reject(err));
+    });
+
+    // TODO:
   }
 }
