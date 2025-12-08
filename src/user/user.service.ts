@@ -36,7 +36,18 @@ export class UserService {
   }
 
   async findOneById(id: number): Promise<User | null> {
-    // const user = await this.usersRepository.findOneBy({ id });
+    const user = await this.usersRepository.findOneBy({ id });
+
+    if (!user)
+      throw new HttpException(
+        `User with provided id doesn't exist in the system.`,
+        HttpStatus.NOT_FOUND,
+      );
+
+    return user;
+  }
+
+  async getUserPosts(id: number): Promise<User | null> {
     const user = await this.usersRepository.findOne({
       where: { id },
       relations: ['posts'],

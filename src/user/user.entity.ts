@@ -1,4 +1,4 @@
-import { Exclude } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import {
   Entity,
   Column,
@@ -33,6 +33,7 @@ export class User {
   @Exclude({ toPlainOnly: true })
   password: string;
 
+  @Expose({ groups: [UserRole.ADMIN] })
   @Column({
     type: 'enum',
     enum: UserRole,
@@ -51,9 +52,11 @@ export class User {
   @CreateDateColumn()
   createdAt: Date;
 
+  @Expose({ groups: [UserRole.ADMIN] })
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @Expose({ groups: [UserRole.ADMIN] })
   @DeleteDateColumn()
   deletedAt: Date;
 }

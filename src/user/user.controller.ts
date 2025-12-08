@@ -72,6 +72,16 @@ export class UserController {
     };
   }
 
+  @Get(':id/posts')
+  @UseGuards(JwtAuthGuard)
+  async listUserPosts(@Param('id', ParseIntPipe) id: number) {
+    const user = await this.userService.getUserPosts(id);
+    return {
+      message: `User's posts has been retrieved successfully`,
+      data: user,
+    };
+  }
+
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   async update(

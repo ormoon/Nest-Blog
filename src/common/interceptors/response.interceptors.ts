@@ -10,10 +10,13 @@ import { ControllerResponse, CustomResponse } from '../types/response.types';
 import { Response } from 'express';
 import Stream from 'node:stream';
 import { instanceToPlain } from 'class-transformer';
+import { UserRole } from '../../user/user.entity';
+import { RequestWithUser } from '../../auth/interfaces/RequestWitUser.interface';
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const req = context.switchToHttp().getRequest<RequestWithUser>();
     const res = context.switchToHttp().getResponse<Response>();
     return next.handle().pipe(
       map((controllerRes: ControllerResponse) => {
@@ -36,7 +39,10 @@ export class ResponseInterceptor implements NestInterceptor {
 
         // We need to exclude the password field defined in the User entity when returning data, so we convert the entity to a plain object.
         if (data && typeof data === 'object') {
-          data = instanceToPlain(data);
+          const groups =
+            req.user?.role === UserRole.ADMIN ? [UserRole.ADMIN] : [];
+
+          data = instanceToPlain(data, { groups });
         }
 
         const payload: CustomResponse = {
