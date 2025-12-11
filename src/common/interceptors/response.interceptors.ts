@@ -8,29 +8,27 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ControllerResponse, CustomResponse } from '../types/response.types';
 import { Response } from 'express';
-import Stream from 'node:stream';
 import { instanceToPlain } from 'class-transformer';
 import { UserRole } from '../../user/user.entity';
 import { RequestWithUser } from '../../auth/interfaces/RequestWitUser.interface';
+import { RESPONSE_KEY } from '../decorators/skipFormat.decorator';
+import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
+  constructor(private reflector: Reflector) {}
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const req = context.switchToHttp().getRequest<RequestWithUser>();
     const res = context.switchToHttp().getResponse<Response>();
     return next.handle().pipe(
       map((controllerRes: ControllerResponse) => {
-        // if response has been sent directly from controller like res.send(), res.json(), res.end() then skip formatting
-        if (res.headersSent) {
-          return controllerRes;
-        }
+        const skipFormat = this.reflector.get<boolean>(
+          RESPONSE_KEY,
+          context.getHandler(),
+        );
 
-        // if controller response is of type Buffer, Stream, or string then skip formatting like for file download or plain text response
-        if (
-          controllerRes instanceof Buffer ||
-          controllerRes instanceof Stream ||
-          typeof controllerRes === 'string'
-        ) {
+        // if response has been sent directly from controller like res.send(), res.json(), res.end() then skip formatting
+        if (res.headersSent || skipFormat) {
           return controllerRes;
         }
 

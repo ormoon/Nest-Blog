@@ -11,6 +11,7 @@ import {
   UseGuards,
   HttpException,
   HttpStatus,
+  Res,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDto } from './dtos/user.dto';
@@ -22,7 +23,8 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { User, UserRole } from './user.entity';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { UserReportFilterDto } from './dtos/userReportFilter.dto';
+import type { Response } from 'express';
+import { SkipResponseFormat } from '../common/decorators/skipFormat.decorator';
 
 @Controller('users')
 export class UserController {
@@ -116,13 +118,16 @@ export class UserController {
   }
 
   @Post('/export')
+  @SkipResponseFormat()
   // @UseGuards(JwtAuthGuard, RolesGuard)
   // @Roles(UserRole.ADMIN)
-  async exportUsers(@Body() reportFilter: UserReportFilterDto) {
-    await this.userService.exportUsers(reportFilter);
-    return {
-      message: `Users report has been exported successfully`,
-      data: null,
-    };
+  async exportUsers(@Res() res: Response) {
+    res.set({
+      'Content-Type': 'text/csv',
+      'Content-Disposition': `attachment; filename="user-reports.csv"`,
+    });
+
+    const csvStream = await this.userService.exportUsers();
+    csvStream.pipe(res);
   }
 }

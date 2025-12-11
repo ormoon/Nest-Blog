@@ -6,10 +6,10 @@ import { UserDto } from './dtos/user.dto';
 import { QueryDto } from '../common/dtos/query.dto';
 import { buildQueryOptions } from '../common/utils/query.util';
 import * as csv from 'fast-csv';
-import { PassThrough } from 'stream';
-import { Post, PostStatus } from '../post/post.entity';
 import { UserReportFilterDto } from './dtos/userReportFilter.dto';
-import { distinct, groupBy } from 'rxjs';
+import { formatHeader } from '../common/utils/headerFormatter';
+import { pipeline } from 'stream/promises';
+import { PassThrough, Readable } from 'stream';
 
 @Injectable()
 export class UserService {
@@ -83,11 +83,7 @@ export class UserService {
   }
 
   // export users, also export based on filter
-  async exportUsers(filter: UserReportFilterDto) {
-    const csvStream = csv.format({ headers: true });
-    const outputStream = new PassThrough();
-    csvStream.pipe(outputStream);
-
+  async exportUsers(filter?: UserReportFilterDto): Promise<Readable> {
     const queryBuilder = this.usersRepository
       .createQueryBuilder('user')
       .leftJoin('user.posts', 'post')
@@ -115,24 +111,38 @@ export class UserService {
       'totalPosts',
     ];
 
-    queryStream.on('data', (row) => {
-      const data: Record<string, unknown> = {};
-      headers.forEach((header) => {
-        const value: string = String(row?.[`user_${header}`] ?? '');
-        data[header] = value;
-      });
-      console.log(data);
-      csvStream.write(data);
-    });
+    const formatRow = (row: Record<string, any>) =>
+      headers.reduce<Record<string, unknown>>((acc, header) => {
+        acc[formatHeader(header)] =
+          header === 'totalPosts'
+            ? Number(row?.[`user_${header}`] ?? 0)
+            : (row?.[`user_${header}`] ?? '');
+        return acc;
+      }, {});
 
-    await new Promise<void>((resolve, reject) => {
-      queryStream.on('end', () => {
-        csvStream.end();
-        resolve();
-      });
-      queryStream.on('error', (err) => reject(err));
+    const csvStream = csv.format({
+      headers: headers.map(formatHeader),
     });
+    const pass = new PassThrough();
 
-    // TODO:
+    try {
+      await pipeline(
+        queryStream,
+        async function* (source) {
+          for await (const row of source) {
+            yield formatRow(row as Record<string, any>);
+          }
+        },
+        csvStream,
+        pass,
+      );
+    } catch (err) {
+      console.error('Error >> ', err);
+      throw new HttpException(
+        'Failed to export users',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return pass;
   }
 }
