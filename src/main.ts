@@ -1,6 +1,5 @@
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ResponseInterceptor } from './common/interceptors/response.interceptors';
 import { ValidationPipe } from '@nestjs/common';
 import { CatchExceptionFilter } from './common/filters/exception.filter';
 
@@ -15,7 +14,6 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new CatchExceptionFilter(httpAdapterHost));
-  app.useGlobalInterceptors(new ResponseInterceptor());
   await app.listen(process.env.PORT ?? 8000);
 }
 bootstrap().catch((err: unknown) => {
