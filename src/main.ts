@@ -1,15 +1,19 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { loggerInstance } from './common/utils/logger';
-import { WinstonModule } from 'nest-winston';
+import { winstonLogger } from './common/utils/logger';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: WinstonModule.createLogger({
-      instance: loggerInstance,
-    }),
+    bufferLogs: true,
   });
+
+  const configService = app.get(ConfigService);
+
+  app.useLogger(
+    winstonLogger({ dirName: configService.get<string>('LOG_DIR') }),
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({
