@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -48,6 +48,7 @@ import { PostModule } from './post/post.module';
       useClass: CatchExceptionFilter,
     },
     PostService,
+    Logger,
   ],
 })
 export class AppModule {}

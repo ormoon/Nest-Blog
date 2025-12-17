@@ -119,8 +119,8 @@ export class UserController {
 
   @Post('/export')
   @SkipResponseFormat()
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   async exportUsers(@Res() res: Response) {
     res.set({
       'Content-Type': 'text/csv',

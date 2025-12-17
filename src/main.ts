@@ -1,11 +1,16 @@
-import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { CatchExceptionFilter } from './common/filters/exception.filter';
+import { loggerInstance } from './common/utils/logger';
+import { WinstonModule } from 'nest-winston';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const httpAdapterHost = app.get(HttpAdapterHost);
+  const app = await NestFactory.create(AppModule, {
+    logger: WinstonModule.createLogger({
+      instance: loggerInstance,
+    }),
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -13,7 +18,7 @@ async function bootstrap() {
       forbidNonWhitelisted: false,
     }),
   );
-  app.useGlobalFilters(new CatchExceptionFilter(httpAdapterHost));
+
   await app.listen(process.env.PORT ?? 8000);
 }
 bootstrap().catch((err: unknown) => {
